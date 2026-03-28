@@ -113,7 +113,29 @@ async function loginController(req, res) {
     }
 }
 
+async function logoutController(req, res) {
+    try {
+        res.clearCookie("token", {
+            httpOnly: true,
+            secure: true,
+            sameSite: "none"
+        });
+
+        res.status(201).json({
+            "msg": "user Logout successful",
+            "success": true
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            "msg": "Internal server error",
+            success: false
+        });
+    }
+}
+
 module.exports = {
     registerController,
-    loginController
+    loginController,
+    logoutController
 }
