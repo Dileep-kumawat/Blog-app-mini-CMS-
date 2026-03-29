@@ -2,52 +2,49 @@ import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
     blogs: [],
-    loading: false,
-    error: null
-}
+    listLoading: false,
+    mutating: false,
+    error: null,
+};
 
 const blogSlice = createSlice({
-    name: "blog",
+    name: 'blog',
     initialState,
     reducers: {
-        setBlogs: (state, action) => {
+        setBlogs(state, action) {
             state.blogs = action.payload;
         },
-
-        addBlog: (state, action) => {
+        addBlog(state, action) {
             state.blogs.unshift(action.payload);
         },
-
-        updateBlogInState: (state, action) => {
+        updateBlogInState(state, action) {
             const updated = action.payload;
-
-            const index = state.blogs.findIndex(
-                (blog) => blog._id === updated._id
-            )
-
-            if (index !== -1) {
-                state.blogs[index] = updated;
-            }
+            const index = state.blogs.findIndex((b) => b._id === updated._id);
+            if (index !== -1) state.blogs[index] = updated;
         },
-
-        removeBlog: (state, action) => {
-            const id = action.payload;
-
-            state.blogs = state.blogs.filter(
-                (blog) => blog._id !== id
-            )
+        removeBlog(state, action) {
+            state.blogs = state.blogs.filter((b) => b._id !== action.payload);
         },
-
-        setLoading: (state, action) => {
-            state.loading = action.payload;
+        setListLoading(state, action) {
+            state.listLoading = action.payload;
         },
-
-        setError: (state, action) => {
+        setMutating(state, action) {
+            state.mutating = action.payload;
+        },
+        setError(state, action) {
             state.error = action.payload;
         },
-    }
+    },
 });
 
-export const { setBlogs, addBlog, updateBlogInState, removeBlog, setLoading, setError } = blogSlice.actions;
+export const {
+    setBlogs,
+    addBlog,
+    updateBlogInState,
+    removeBlog,
+    setListLoading,
+    setMutating,
+    setError,
+} = blogSlice.actions;
 
 export default blogSlice.reducer;

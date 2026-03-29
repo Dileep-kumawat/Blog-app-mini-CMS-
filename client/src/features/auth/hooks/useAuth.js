@@ -1,79 +1,85 @@
-import { register, login, logout, getMe } from '../apis/auth.api';
+import { useCallback } from 'react';
 import { useDispatch } from 'react-redux';
-import { setUser, setLoading, setError } from '../authSlice'
+import { register, login, logout, getMe } from '../apis/auth.api';
+import {
+    setUser,
+    setInitialising,
+    setLoading,
+    setError,
+} from '../authSlice';
 
 export function useAuth() {
     const dispatch = useDispatch();
 
-    function handleError(error) {
-        const message = error?.msg || "Unexpected error occurred";
-        const status = error?.status || 0;
+    const handleError = useCallback(
+        (error) => {
+            const { status, msg } = error ?? {};
+            if (status === 401) {
+                dispatch(setError('Invalid email or password'));
+            } else if (status === 409) {
+                dispatch(setError('An account with this email already exists'));
+            } else if (status === 0) {
+                dispatch(setError('Cannot reach the server — check your connection'));
+            } else {
+                dispatch(setError(msg || 'An unexpected error occurred'));
+            }
+        },
+        [dispatch]
+    );
 
-        if (status === 401) {
-            dispatch(setError("Invalid email or password"));
-        } else if (status === 409) {
-            dispatch(setError("User already exists"));
-        } else if (status === 0) {
-            dispatch(setError("Check your internet connection"));
-        } else {
-            dispatch(setError(message));
-        }
+    const handleRegister = useCallback(
+        async ({ username, email, password }) => {
+            dispatch(setLoading(true));
+            dispatch(setError(null));
+            try {
+                const res = await register({ username, email, password });
+                dispatch(setUser(res.user));
+                return { success: true };
+            } catch (error) {
+                handleError(error);
+                return { success: false };
+            } finally {
+                dispatch(setLoading(false));
+            }
+        },
+        [dispatch, handleError]
+    );
 
-        console.error("Auth Error:", error);
-    }
+    const handleLogin = useCallback(
+        async ({ email, password }) => {
+            dispatch(setLoading(true));
+            dispatch(setError(null));
+            try {
+                const res = await login({ email, password });
+                dispatch(setUser(res.user));
+                return { success: true };
+            } catch (error) {
+                handleError(error);
+                return { success: false };
+            } finally {
+                dispatch(setLoading(false));
+            }
+        },
+        [dispatch, handleError]
+    );
 
-    async function handleRegister({ username, email, password }) {
-        dispatch(setLoading(true));
-        dispatch(setError(null));
-
-        try {
-            const res = await register({ username, email, password });
-            dispatch(setUser(res.user));
-            return { success: true };
-        } catch (error) {
-            handleError(error);
-            return { success: true };
-        } finally {
-            dispatch(setLoading(false));
-        }
-    }
-
-    async function handleLogin({ email, password }) {
-        dispatch(setLoading(true));
-        dispatch(setError(null));
-
-        try {
-            const res = await login({ email, password });
-            dispatch(setUser(res.user));
-            return { success: true };
-        } catch (error) {
-            handleError(error);
-            return { success: false };
-        } finally {
-            dispatch(setLoading(false));
-        }
-    }
-
-    async function handleGetMe() {
-        dispatch(setLoading(true));
-        dispatch(setError(null));
-
+    const handleGetMe = useCallback(async () => {
+        dispatch(setInitialising(true));
         try {
             const res = await getMe();
             dispatch(setUser(res.user));
             return { success: true };
-        } catch (error) {
+        } catch {
             dispatch(setUser(null));
             return { success: false };
         } finally {
-            dispatch(setLoading(false));
+            dispatch(setInitialising(false));
         }
-    }
+    }, [dispatch]);
 
-    async function handleLogout() {
+    const handleLogout = useCallback(async () => {
         dispatch(setLoading(true));
         dispatch(setError(null));
-
         try {
             await logout();
             dispatch(setUser(null));
@@ -84,12 +90,7 @@ export function useAuth() {
         } finally {
             dispatch(setLoading(false));
         }
-    }
+    }, [dispatch, handleError]);
 
-    return {
-        handleRegister,
-        handleLogin,
-        handleLogout,
-        handleGetMe
-    };
+    return { handleRegister, handleLogin, handleLogout, handleGetMe };
 }

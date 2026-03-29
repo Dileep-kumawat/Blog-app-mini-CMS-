@@ -1,35 +1,29 @@
-import { useDispatch } from "react-redux";
-import {
-    create,
-    updateBlog,
-    deleteBlog,
-    getBlogs,
-    getMyBlogs
-} from "../apis/blog.api";
-
+import { useCallback } from 'react';
+import { useDispatch } from 'react-redux';
+import { getBlogs, getMyBlogs, createBlog, updateBlog, deleteBlog } from '../apis/blog.api';
 import {
     setBlogs,
-    setError,
-    setLoading,
     addBlog,
+    updateBlogInState,
     removeBlog,
-    updateBlogInState
-} from "../blogSlice";
+    setListLoading,
+    setMutating,
+    setError,
+} from '../blogSlice';
 
 export function useBlogs() {
     const dispatch = useDispatch();
 
-    function handleError(error) {
-        const message = error?.msg || "Unexpected error occurred";
-        dispatch(setError(message));
-        console.error("Blogs Error:", error);
-    }
+    const handleError = useCallback(
+        (error) => {
+            dispatch(setError(error?.msg || 'An unexpected error occurred'));
+        },
+        [dispatch]
+    );
 
-    // GET Blogs
-    async function handleGetBlogs() {
-        dispatch(setLoading(true));
+    const handleGetBlogs = useCallback(async () => {
+        dispatch(setListLoading(true));
         dispatch(setError(null));
-
         try {
             const res = await getBlogs();
             dispatch(setBlogs(res.blogs));
@@ -38,15 +32,13 @@ export function useBlogs() {
             handleError(error);
             return { success: false };
         } finally {
-            dispatch(setLoading(false));
+            dispatch(setListLoading(false));
         }
-    }
+    }, [dispatch, handleError]);
 
-    // GET user's Blogs
-    async function handleGetMyBlogs() {
-        dispatch(setLoading(true));
+    const handleGetMyBlogs = useCallback(async () => {
+        dispatch(setListLoading(true));
         dispatch(setError(null));
-
         try {
             const res = await getMyBlogs();
             dispatch(setBlogs(res.blogs));
@@ -55,72 +47,69 @@ export function useBlogs() {
             handleError(error);
             return { success: false };
         } finally {
-            dispatch(setLoading(false));
+            dispatch(setListLoading(false));
         }
-    }
+    }, [dispatch, handleError]);
 
-    // CREATE BlogS
-    async function handleCreateBlog(data) {
-        dispatch(setLoading(true));
-        dispatch(setError(null));
+    const handleCreateBlog = useCallback(
+        async (data) => {
+            dispatch(setMutating(true));
+            dispatch(setError(null));
+            try {
+                const res = await createBlog(data);
+                dispatch(addBlog(res.blog));
+                return { success: true };
+            } catch (error) {
+                handleError(error);
+                return { success: false };
+            } finally {
+                dispatch(setMutating(false));
+            }
+        },
+        [dispatch, handleError]
+    );
 
-        try {
-            const res = await create(data);
+    const handleUpdateBlog = useCallback(
+        async (id, data) => {
+            dispatch(setMutating(true));
+            dispatch(setError(null));
+            try {
+                const res = await updateBlog(id, data);
+                dispatch(updateBlogInState(res.blog));
+                return { success: true };
+            } catch (error) {
+                handleError(error);
+                return { success: false };
+            } finally {
+                dispatch(setMutating(false));
+            }
+        },
+        [dispatch, handleError]
+    );
 
-            dispatch(addBlog(res.blog));
-
-            return { success: true };
-        } catch (error) {
-            handleError(error);
-            return { success: false };
-        } finally {
-            dispatch(setLoading(false));
-        }
-    }
-
-    // UPDATE Blog
-    async function handleUpdateBlog(id, data) {
-        dispatch(setLoading(true));
-        dispatch(setError(null));
-
-        try {
-            const res = await updateBlog(id, data);
-
-            dispatch(updateBlogInState(res.blog));
-
-            return { success: true };
-        } catch (error) {
-            handleError(error);
-            return { success: false };
-        } finally {
-            dispatch(setLoading(false));
-        }
-    }
-
-    // DELETE Blog
-    async function handleDeleteBlog(id) {
-        dispatch(setLoading(true));
-        dispatch(setError(null));
-
-        try {
-            await deleteBlog(id);
-
-            dispatch(removeBlog(id));
-
-            return { success: true };
-        } catch (error) {
-            handleError(error);
-            return { success: false };
-        } finally {
-            dispatch(setLoading(false));
-        }
-    }
+    const handleDeleteBlog = useCallback(
+        async (id) => {
+            dispatch(setMutating(true));
+            dispatch(setError(null));
+            try {
+                await deleteBlog(id);
+                dispatch(removeBlog(id));
+                return { success: true };
+            } catch (error) {
+                handleError(error);
+                return { success: false };
+            } finally {
+                dispatch(setMutating(false));
+            }
+        },
+        [dispatch, handleError]
+    );
 
     return {
-        handleCreateBlog,
         handleGetBlogs,
+        handleGetMyBlogs,
+        handleCreateBlog,
         handleUpdateBlog,
         handleDeleteBlog,
-        handleGetMyBlogs
     };
 }

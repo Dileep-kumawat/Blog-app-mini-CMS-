@@ -1,0 +1,87 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Lora:ital,wght@0,400;0,500;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap');
+@import "tailwindcss";
+
+@theme {
+    --font-display: "Playfair Display", Georgia, serif;
+    --font-body: "Lora", Georgia, serif;
+    --font-ui: "DM Sans", system-ui, sans-serif;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    html {
+        scroll-behavior: smooth;
+    }
+
+    body {
+        @apply font-ui antialiased bg-stone-50 text-stone-900 dark:bg-stone-950 dark:text-stone-100;
+        transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    * {
+        transition-property: border-color, background-color;
+        transition-duration: 0.15s;
+        transition-timing-function: ease;
+    }
+}
+
+@layer utilities {
+    .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* Limit prose content height for card preview */
+    .blog-preview {
+        display: -webkit-box;
+        -webkit-line-clamp: 4;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    /* Markdown content inside cards */
+    .prose-card p {
+        @apply mb-2 last:mb-0;
+    }
+
+    .prose-card h1,
+    .prose-card h2,
+    .prose-card h3 {
+        @apply font-display font-semibold mb-1;
+    }
+
+    .prose-card strong {
+        @apply font-semibold;
+    }
+
+    .prose-card em {
+        @apply italic;
+    }
+
+    .prose-card code {
+        @apply bg-stone-100 dark:bg-stone-800 px-1 py-0.5 rounded text-xs font-mono;
+    }
+
+    .prose-card ul {
+        @apply list-disc list-inside;
+    }
+
+    .prose-card ol {
+        @apply list-decimal list-inside;
+    }
+
+    .prose-card a {
+        @apply text-amber-600 dark:text-amber-400 underline;
+    }
+
+    .prose-card blockquote {
+        @apply border-l-2 border-amber-400 pl-3 italic text-stone-500 dark:text-stone-400;
+    }
+}
