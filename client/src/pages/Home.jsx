@@ -22,6 +22,8 @@ const Home = () => {
   const isAuth       = useSelector(selectIsAuthenticated);
   const [searchParams, setSearchParams] = useSearchParams();
 
+  console.log(blogs);
+
   const [search, setSearch] = useState(searchParams.get('search') || '');
   const [debouncedSearch, setDebouncedSearch] = useState(search);
 
