@@ -1,9 +1,10 @@
+import AppRoutes from "./app/appRoutes"
 
 const App = () => {
   return (
-    <div>
-      Welcome from app
-    </div>
+    <>
+      <AppRoutes />
+    </>
   )
 }
 
